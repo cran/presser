@@ -231,6 +231,64 @@ test_that("/etag", {
   expect_equal(resp$status_code, 412)
 })
 
+test_that("/response-headers", {
+  url <- web$url("/response-headers")
+  resp <- curl::curl_fetch_memory(url)
+  expect_equal(rawToChar(resp$content), "{}")
+
+  url2 <- web$url("/response-headers", c(foo = "bar"))
+  resp2 <- curl::curl_fetch_memory(url2)
+  expect_equal(
+    jsonlite::fromJSON(rawToChar(resp2$content)),
+    list(foo = "bar")
+  )
+  headers <- curl::parse_headers_list(resp2$headers)
+  expect_equal(headers[["foo"]], "bar")
+
+  url3 <- web$url("/response-headers", c(foo = "bar", foobar = "baz"))
+  resp3 <- curl::curl_fetch_memory(url3)
+  expect_equal(
+    jsonlite::fromJSON(rawToChar(resp3$content)),
+    list(foo = "bar", foobar = "baz")
+  )
+  headers <- curl::parse_headers_list(resp3$headers)
+  expect_equal(headers[["foo"]], "bar")
+  expect_equal(headers[["foobar"]], "baz")
+
+  handle <- curl::new_handle()
+  data <- charToRaw("{}")
+  curl::handle_setheaders(
+    handle,
+    "content-type" = "application/json"
+  )
+  curl::handle_setopt(
+    handle,
+    customrequest = "POST",
+    postfieldsize = length(data),
+    postfields = data
+  )
+  resp31 <- curl::curl_fetch_memory(url3, handle = handle)
+  expect_equal(
+    jsonlite::fromJSON(rawToChar(resp31$content)),
+    list(foo = "bar", foobar = "baz")
+  )
+  headers <- curl::parse_headers_list(resp3$headers)
+  expect_equal(headers[["foo"]], "bar")
+  expect_equal(headers[["foobar"]], "baz")
+
+  url4 <- web$url("/response-headers", c(foo = "bar", foo = "bar2"))
+  resp4 <- curl::curl_fetch_memory(url4)
+  expect_equal(
+    jsonlite::fromJSON(rawToChar(resp4$content)),
+    list(foo = c("bar", "bar2"))
+  )
+  headers <- curl::parse_headers_list(resp4$headers)
+  expect_equal(
+    headers[names(headers) == "foo"],
+    list(foo = "bar", foo = "bar2")
+  )
+})
+
 # Response formats =====================================================
 
 test_that("/deny", {
@@ -348,6 +406,31 @@ test_that("/delay", {
   expect_equal(resp$type, "application/json")
   echo <- jsonlite::fromJSON(rawToChar(resp$content), simplifyVector = FALSE)
   expect_equal(echo$path, "/delay/0.2")
+})
+
+test_that("/stream-bytes", {
+  url <- web$url("/stream-bytes/100")
+  resp <- curl::curl_fetch_memory(url)
+  headers <- curl:::parse_headers_list(resp$headers)
+  expect_equal(resp$status_code, 200)
+  expect_equal(headers[["transfer-encoding"]], "chunked")
+  expect_equal(length(resp$content), 100)
+
+  ## seed works
+  url2 <- web$url("/stream-bytes/10", c(seed = 100))
+  resp2 <- curl::curl_fetch_memory(url2)
+  expect_false(identical(resp$content, resp2$content))
+
+  resp3 <- curl::curl_fetch_memory(url2)
+  expect_identical(resp2$content, resp3$content)
+
+  ## chunk_size works
+  url <- web$url("/stream-bytes/100", c(chunk_size = 30))
+  resp <- curl::curl_fetch_memory(url)
+  headers <- curl:::parse_headers_list(resp$headers)
+  expect_equal(resp$status_code, 200)
+  expect_equal(headers[["transfer-encoding"]], "chunked")
+  expect_equal(length(resp$content), 100)
 })
 
 test_that("/uuid", {

@@ -23,6 +23,9 @@ after the specified number of seconds have passed. Use the \code{locals}
 environment to distinguish between the calls. If you are using
 \code{delay()}, and want to serve requests in parallel, then you probably
 need a multi-threaded server, see \code{\link[=server_opts]{server_opts()}}.
+\item \code{add_header(field, value)}: Add a response header. Note that
+\code{add_header()} may create duplicate headers. You usually want
+\code{set_header()}.
 \item \code{get_header(field)}: Query the currently set response headers. If
 \code{field} is not present it return \code{NULL}.
 \item \code{on_response(fun)}: Run the \code{fun} handler function just before the
@@ -39,13 +42,17 @@ or HTML or other text. For raw vectors it sets the content type to
 \code{application/octet-stream}.
 \item \code{send_json(object = NULL, text = NULL, ...)}: Send a JSON response.
 Either \code{object} or \code{text} must be given. \code{object} will be converted
-to JSON using \code{\link[jsonlite:toJSON]{jsonlite::toJSON()}}. \code{...} are passed to
-\code{\link[jsonlite:toJSON]{jsonlite::toJSON()}}. It sets the content type appropriately.
+to JSON using \code{\link[jsonlite:fromJSON]{jsonlite::toJSON()}}. \code{...} are passed to
+\code{\link[jsonlite:fromJSON]{jsonlite::toJSON()}}. It sets the content type appropriately.
 \item \code{send_file(path, root = ".")}: Send a file. Set \code{root = "/"} for
 absolute file names. It sets the content type automatically, based
 on the extension of the file, if it is not set already.
 \item \code{send_status(status)}: Send the specified HTTP status code, without
 a response body.
+\item \code{send_chunk(data)}: Send a chunk of a response in chunked encoding.
+The first chunk will automatically send the HTTP response headers.
+Presser will automatically send a final zero-lengh chunk, unless
+\verb{$delay()} is called.
 \item \code{set_header(field, value)}: Set a response header. If the headers have
 been sent out already, then it throws a warning, and does nothing.
 \item \code{set_status(status)}: Set the response status code. If the headers

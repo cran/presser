@@ -1,6 +1,6 @@
 Package: presser
 Title: Lightweight Web Server for Testing
-Version: 1.0.0
+Version: 1.1.0
 Authors@R: c(
   person("Gábor", "Csárdi", role = c("aut", "cre"),
          email = "csardi.gabor@gmail.com"),
@@ -26,12 +26,12 @@ LazyData: true
 URL: https://r-lib.github.io/presser,
         https://github.com/gaborcsardi/presser#readme
 BugReports: https://github.com/gaborcsardi/presser/issues
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.0.9000
 Imports: stats, tools, utils
 Suggests: callr, curl, glue, jsonlite, testthat, withr
 Encoding: UTF-8
 NeedsCompilation: yes
-Packaged: 2020-05-02 15:21:40 UTC; gaborcsardi
+Packaged: 2020-06-24 09:50:16 UTC; csard
 Author: Gábor Csárdi [aut, cre],
   RStudio, Pbc. [cph],
   Civetweb contributors [ctb] (see inst/credits/ciwetweb.md),
@@ -41,4 +41,4 @@ Author: Gábor Csárdi [aut, cre],
   Aladdin Enterprises [cph] (src/md5.h)
 Maintainer: Gábor Csárdi <csardi.gabor@gmail.com>
 Repository: CRAN
-Date/Publication: 2020-05-06 13:00:06 UTC
+Date/Publication: 2020-06-24 10:10:02 UTC

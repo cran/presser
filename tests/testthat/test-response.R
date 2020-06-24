@@ -67,3 +67,27 @@ test_that("write-wait", {
   expect_equal(resp$status_code, 200)
   expect_equal(rawToChar(resp$content), "hello world!")
 })
+
+test_that("send_chunk", {
+  url <- web$url("/send-chunk")
+  resp <- curl::curl_fetch_memory(url)
+  expect_equal(resp$status_code, 200)
+  expect_equal(
+    rawToChar(resp$content),
+    "first chunk\nsecond chunk\nthird and final chunk\n"
+  )
+  headers <- curl::parse_headers_list(resp$headers)
+  expect_equal(headers[["content-type"]], "text/plain")
+  expect_equal(headers[["transfer-encoding"]], "chunked")
+})
+
+test_that("add_header", {
+  url <- web$url("/add-header")
+  resp <- curl::curl_fetch_memory(url)
+  headers <- curl::parse_headers_list(resp$headers)
+  expect_equal(
+    headers[names(headers) == "foo"],
+    list(foo = "bar", foo = "bar2")
+  )
+  expect_equal(headers[["foobar"]], "baz")
+})
